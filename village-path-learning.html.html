@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Village Path — Learn &amp; Grow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rokkitt:wght@500;700;800&family=Hind:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A4A;
+    --ink-soft:#2C3E63;
+    --marigold:#F4A300;
+    --turmeric:#E8C547;
+    --field:#5C7A3D;
+    --field-dark:#43592C;
+    --clay:#C1440E;
+    --paper:#FBF6EA;
+    --paper-dark:#EFE6D2;
+    --ok:#3C7A4B;
+    --bad:#B23A2E;
+    --radius:14px;
+    --shadow: 0 6px 0 rgba(27,42,74,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(244,163,0,0.10), transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(92,122,61,0.18), transparent 45%);
+    color:var(--paper);
+    font-family:'Hind', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  /* ---------- HEADER ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand h1{
+    font-family:'Rokkitt', serif;
+    font-weight:800;
+    font-size:2.1rem;
+    margin:0;
+    letter-spacing:0.5px;
+    color:var(--turmeric);
+  }
+  .brand span{
+    font-size:0.95rem;
+    color:rgba(251,246,234,0.65);
+  }
+  .stat-strip{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .pill{
+    background:rgba(251,246,234,0.08);
+    border:1px solid rgba(251,246,234,0.18);
+    border-radius:999px;
+    padding:7px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .pill b{ color:var(--turmeric); font-weight:600; }
+
+  /* ---------- AUDIENCE TOGGLE ---------- */
+  .audience-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .audience-label{
+    font-size:0.85rem;
+    color:rgba(251,246,234,0.6);
+  }
+  .audience-toggle{
+    display:flex;
+    background:rgba(251,246,234,0.08);
+    border-radius:999px;
+    padding:4px;
+    gap:4px;
+  }
+  .audience-btn{
+    border:none;
+    background:transparent;
+    color:var(--paper);
+    font-family:'Rokkitt', serif;
+    font-weight:700;
+    font-size:0.88rem;
+    padding:8px 18px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .audience-btn.active{
+    background:var(--marigold);
+    color:var(--ink);
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 300px;
+    gap:22px;
+  }
+  @media (max-width: 760px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+
+  /* ---------- SUBJECT TABS ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .tab{
+    font-family:'Rokkitt', serif;
+    font-weight:700;
+    font-size:0.95rem;
+    border:2px solid transparent;
+    background:rgba(251,246,234,0.08);
+    color:var(--paper);
+    padding:9px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .tab:hover{ transform:translateY(-1px); }
+  .tab.active{
+    background:var(--turmeric);
+    color:var(--ink);
+    border-color:var(--turmeric);
+  }
+
+  /* ---------- PATH ---------- */
+  .path-title{
+    font-family:'Rokkitt', serif;
+    font-size:1.3rem;
+    font-weight:700;
+    margin:0 0 4px;
+  }
+  .path-sub{
+    margin:0 0 18px;
+    color:#5b5240;
+    font-size:0.92rem;
+  }
+  .road{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    padding-left:6px;
+  }
+  .road::before{
+    content:"";
+    position:absolute;
+    left:27px;
+    top:30px;
+    bottom:30px;
+    width:4px;
+    background-repeat:repeat-y;
+    background-image:linear-gradient(var(--field) 60%, transparent 0%);
+    background-size:4px 16px;
+    opacity:0.55;
+  }
+  .node{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 6px;
+    position:relative;
+    cursor:pointer;
+    border-radius:10px;
+  }
+  .node:hover{ background:rgba(92,122,61,0.08); }
+  .node.locked{ cursor:not-allowed; opacity:0.55; }
+  .badge-circle{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.5rem;
+    flex-shrink:0;
+    border:3px solid var(--ink-soft);
+    background:var(--paper-dark);
+    z-index:1;
+  }
+  .node.done .badge-circle{
+    background:var(--field);
+    border-color:var(--field-dark);
+    color:white;
+  }
+  .node.current .badge-circle{
+    background:var(--marigold);
+    border-color:var(--clay);
+    color:white;
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(244,163,0,0.45); }
+    50%{ box-shadow:0 0 0 8px rgba(244,163,0,0); }
+  }
+  .node-info b{ display:block; font-family:'Rokkitt',serif; font-size:1.02rem; }
+  .node-info small{ color:#6b6248; }
+
+  /* ---------- SIDEBAR ---------- */
+  .side-card h2{
+    font-family:'Rokkitt', serif;
+    font-size:1.1rem;
+    margin:0 0 12px;
+  }
+  .village{
+    position:relative;
+    height:170px;
+    border-radius:10px;
+    overflow:hidden;
+    background:linear-gradient(to top, #BFE3A0 0%, #BFE3A0 55%, #AEE0EE 55%, #AEE0EE 100%);
+    margin-bottom:8px;
+  }
+  .village .sun{
+    position:absolute; top:10px; right:14px;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--turmeric);
+  }
+  .village .item{
+    position:absolute;
+    bottom:14px;
+    font-size:1.7rem;
+    transition:opacity .4s ease, transform .4s ease;
+    opacity:0;
+    transform:translateY(8px);
+  }
+  .village .item.show{ opacity:1; transform:translateY(0); }
+  .village-caption{
+    font-size:0.82rem;
+    color:#5b5240;
+    margin:0 0 18px;
+  }
+  .badges-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:6px;
+  }
+  .badge-chip{
+    background:var(--paper-dark);
+    border-radius:8px;
+    padding:6px 9px;
+    font-size:0.78rem;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    opacity:0.35;
+  }
+  .badge-chip.earned{ opacity:1; background:var(--turmeric); }
+
+  /* ---------- MODAL ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(27,42,74,0.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:var(--radius);
+    max-width:480px;
+    width:100%;
+    padding:26px;
+    box-shadow:0 14px 0 rgba(0,0,0,0.18);
+  }
+  .modal h3{
+    font-family:'Rokkitt', serif;
+    margin:0 0 4px;
+    font-size:1.15rem;
+  }
+  .modal .qcount{ font-size:0.8rem; color:#6b6248; margin-bottom:14px; }
+  .modal .question{ font-size:1.05rem; font-weight:600; margin-bottom:16px; }
+  .opt{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:var(--paper-dark);
+    border:2px solid transparent;
+    border-radius:10px;
+    padding:11px 14px;
+    margin-bottom:9px;
+    font-family:'Hind', sans-serif;
+    font-size:0.96rem;
+    cursor:pointer;
+  }
+  .opt:hover{ border-color:var(--marigold); }
+  .opt.correct{ background:#DCEFD9; border-color:var(--ok); }
+  .opt.wrong{ background:#F6DAD5; border-color:var(--bad); }
+  .feedback{
+    margin-top:10px;
+    font-size:0.92rem;
+    min-height:1.4em;
+    font-weight:600;
+  }
+  .feedback.ok{ color:var(--ok); }
+  .feedback.bad{ color:var(--bad); }
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:18px;
+  }
+  button.primary, button.ghost{
+    font-family:'Rokkitt', serif;
+    font-weight:700;
+    border-radius:10px;
+    padding:10px 18px;
+    border:none;
+    cursor:pointer;
+    font-size:0.92rem;
+  }
+  button.primary{ background:var(--marigold); color:var(--ink); }
+  button.primary:disabled{ opacity:0.4; cursor:not-allowed; }
+  button.ghost{ background:transparent; color:#6b6248; }
+
+  .toast{
+    position:fixed;
+    bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--field);
+    color:white;
+    padding:12px 20px;
+    border-radius:10px;
+    font-family:'Rokkitt', serif;
+    font-weight:600;
+    opacity:0;
+    transition:all .35s ease;
+    z-index:60;
+    box-shadow:0 6px 0 rgba(0,0,0,0.2);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  footer{
+    text-align:center;
+    margin-top:30px;
+    font-size:0.78rem;
+    color:rgba(251,246,234,0.45);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>🌾 Village Path</h1>
+      <span>learning for every age, growing one village</span>
+    </div>
+    <div class="stat-strip">
+      <div class="pill">⭐ <b id="statPoints">0</b> points</div>
+      <div class="pill">🔥 <b id="statStreak">0</b> streak</div>
+      <div class="pill">🏅 <b id="statBadges">0</b>/4 badges</div>
+    </div>
+  </header>
+
+  <div class="audience-row">
+    <span class="audience-label">Who's learning today?</span>
+    <div class="audience-toggle" id="audienceToggle">
+      <button class="audience-btn" data-aud="kids">🧒 Kids</button>
+      <button class="audience-btn" data-aud="adults">🧑‍🌾 Adults</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="grid">
+    <div class="card">
+      <p class="path-title" id="pathTitle">Subject path</p>
+      <p class="path-sub" id="pathSub">Tap a stop on the road to start that lesson.</p>
+      <div class="road" id="road"></div>
+    </div>
+
+    <div class="card side-card">
+      <h2>Your village</h2>
+      <div class="village" id="village">
+        <div class="sun"></div>
+        <div class="item" id="v-well" style="left:42%;">🪣</div>
+        <div class="item" id="v-tree1" style="left:10%;">🌳</div>
+        <div class="item" id="v-hut1" style="left:60%;">🏠</div>
+        <div class="item" id="v-school" style="left:48%; bottom:13px;">🏫</div>
+        <div class="item" id="v-tree2" style="left:25%;">🌳</div>
+        <div class="item" id="v-hut2" style="left:78%;">🏠</div>
+      </div>
+      <p class="village-caption">Every lesson — by anyone, any age — adds something new to the village.</p>
+
+      <h2>Badges</h2>
+      <div class="badges-list" id="badgesList"></div>
+    </div>
+  </div>
+
+  <footer>Works fully offline once loaded — no data, images, or video required.</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalLevelTitle">Level</h3>
+    <p class="qcount" id="modalQCount">Question 1 of 3</p>
+    <p class="question" id="modalQuestion">Question text</p>
+    <div id="modalOptions"></div>
+    <p class="feedback" id="modalFeedback"></p>
+    <div class="modal-actions">
+      <button class="ghost" id="btnClose">Close</button>
+      <button class="primary" id="btnNext" disabled>Next</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const SUBJECT_GROUPS = {
+  kids: {
+    math: {
+      label: "📐 Math",
+      levels: [
+        { title: "Counting the Harvest", questions: [
+          { q:"There are 6 baskets with 4 mangoes each. How many mangoes in total?", opts:["10","20","24","18"], a:2, why:"6 × 4 = 24." },
+          { q:"What is 15 + 27?", opts:["42","32","52","40"], a:0, why:"15 + 27 = 42." },
+          { q:"Half of 18 is?", opts:["6","9","12","8"], a:1, why:"18 ÷ 2 = 9." }
+        ]},
+        { title: "Sharing Fairly", questions: [
+          { q:"12 sweets shared equally among 4 children — how many each?", opts:["2","3","4","6"], a:1, why:"12 ÷ 4 = 3." },
+          { q:"Which fraction is bigger: 1/2 or 1/4?", opts:["1/4","They're equal","1/2","Cannot tell"], a:2, why:"1/2 is larger than 1/4." },
+          { q:"What is 9 × 3?", opts:["27","24","21","18"], a:0, why:"9 × 3 = 27." }
+        ]},
+        { title: "Market Day Maths", questions: [
+          { q:"A pen costs ₹8. How much for 5 pens?", opts:["35","40","45","30"], a:1, why:"8 × 5 = 40." },
+          { q:"What is 100 − 37?", opts:["63","73","67","53"], a:0, why:"100 − 37 = 63." },
+          { q:"Which number is a multiple of 5?", opts:["22","35","41","53"], a:1, why:"35 = 5 × 7." }
+        ]}
+      ]
+    },
+    science: {
+      label: "🔬 Science",
+      levels: [
+        { title: "Plants Around Us", questions: [
+          { q:"Which part of the plant takes in water from soil?", opts:["Leaf","Flower","Root","Stem"], a:2, why:"Roots absorb water and nutrients from soil." },
+          { q:"What do plants need to make food?", opts:["Sunlight","Moonlight","Soap","Sand"], a:0, why:"Plants use sunlight for photosynthesis." },
+          { q:"Which part makes seeds?", opts:["Root","Flower","Stem","Bark"], a:1, why:"Flowers develop into fruits with seeds." }
+        ]},
+        { title: "Weather & Water", questions: [
+          { q:"Water turns into vapour when it is —", opts:["Cooled","Heated","Frozen","Coloured"], a:1, why:"Heat turns liquid water into vapour (evaporation)." },
+          { q:"What falls from clouds as rain?", opts:["Water droplets","Dust","Sand","Smoke"], a:0, why:"Clouds release condensed water droplets as rain." },
+          { q:"Which season usually has the most rain in most regions?", opts:["Winter","Monsoon","Summer","Autumn"], a:1, why:"The monsoon season brings the heaviest rainfall." }
+        ]},
+        { title: "Our Body", questions: [
+          { q:"Which organ pumps blood through the body?", opts:["Lungs","Heart","Liver","Kidney"], a:1, why:"The heart pumps blood throughout the body." },
+          { q:"Which organ helps us breathe?", opts:["Lungs","Stomach","Bones","Skin"], a:0, why:"Lungs take in oxygen and release carbon dioxide." },
+          { q:"What should you do before eating food?", opts:["Wash hands","Run","Shout","Sleep"], a:0, why:"Washing hands removes germs before eating." }
+        ]}
+      ]
+    },
+    language: {
+      label: "📖 Language",
+      levels: [
+        { title: "Naming Words", questions: [
+          { q:"Which word is a noun (naming word)?", opts:["Run","Village","Quickly","Happy"], a:1, why:"\"Village\" names a place — that makes it a noun." },
+          { q:"Pick the action word (verb):", opts:["Jump","Blue","Table","Slow"], a:0, why:"\"Jump\" describes an action." },
+          { q:"Which word describes how something is (adjective)?", opts:["Walk","Tall","Quickly","Book"], a:1, why:"\"Tall\" describes a quality." }
+        ]},
+        { title: "Building Sentences", questions: [
+          { q:"Choose the correct sentence:", opts:["She is go school.","She going to school.","She goes to school.","She gone school."], a:2, why:"\"She goes to school\" is grammatically correct." },
+          { q:"Which word completes: \"The sun ___ in the east.\"", opts:["rise","rises","rising","rose"], a:1, why:"Present tense singular subject takes \"rises\"." },
+          { q:"Which is the plural of 'child'?", opts:["childs","childes","children","child's"], a:2, why:"The plural of \"child\" is \"children\"." }
+        ]},
+        { title: "Reading for Meaning", questions: [
+          { q:"\"The farmer was tired but happy after the harvest.\" How did the farmer feel?", opts:["Angry","Tired and happy","Sad","Bored"], a:1, why:"The sentence states the farmer felt both tired and happy." },
+          { q:"A word that means almost the same as 'happy' is:", opts:["Joyful","Angry","Sleepy","Tired"], a:0, why:"\"Joyful\" is a synonym of \"happy\"." },
+          { q:"Opposite of 'big' is:", opts:["Large","Small","Wide","Tall"], a:1, why:"\"Small\" is the opposite of \"big\"." }
+        ]}
+      ]
+    }
+  },
+  adults: {
+    money: {
+      label: "💰 Money & Savings",
+      levels: [
+        { title: "Counting Your Earnings", questions: [
+          { q:"You earn ₹350 a day. How much do you earn in 6 days?", opts:["₹1,800","₹2,100","₹2,000","₹2,400"], a:1, why:"350 × 6 = ₹2,100." },
+          { q:"You buy goods worth ₹185 and pay with a ₹200 note. What change do you get back?", opts:["₹15","₹25","₹10","₹20"], a:0, why:"₹200 − ₹185 = ₹15." },
+          { q:"Which is the better deal for the same item?", opts:["₹50 for 1 kg","₹90 for 2 kg","₹140 for 3 kg","₹190 for 4 kg"], a:1, why:"₹90 for 2 kg = ₹45/kg, the lowest price per kg here." }
+        ]},
+        { title: "Saving a Little Every Day", questions: [
+          { q:"If you save ₹20 every day, how much will you save in 30 days?", opts:["₹500","₹600","₹560","₹620"], a:1, why:"20 × 30 = ₹600." },
+          { q:"Why is it useful to save money regularly, even small amounts?", opts:["It builds a fund for emergencies","It has no real benefit","It only matters for rich people","It is the same as borrowing"], a:0, why:"Regular saving, even in small amounts, builds a safety fund over time." },
+          { q:"A savings group of 5 people each save ₹100 a month. What is the group's total monthly saving?", opts:["₹400","₹500","₹600","₹450"], a:1, why:"5 × ₹100 = ₹500." }
+        ]},
+        { title: "Smart Spending", questions: [
+          { q:"What is a 'budget'?", opts:["A type of loan","A plan for how you will spend and save money","A government tax","A bank fee"], a:1, why:"A budget is a plan for spending and saving your money." },
+          { q:"Which expense is most important to plan for first?", opts:["Festival shopping","Food and basic needs","A new phone","Entertainment"], a:1, why:"Food and basic needs come before non-essential spending." },
+          { q:"If your monthly income is ₹6,000 and expenses are ₹4,500, how much can you save?", opts:["₹1,000","₹1,500","₹2,000","₹1,200"], a:1, why:"6,000 − 4,500 = ₹1,500." }
+        ]}
+      ]
+    },
+    health: {
+      label: "🩺 Health & Hygiene",
+      levels: [
+        { title: "Clean Water, Healthy Family", questions: [
+          { q:"What is the safest way to make drinking water free of germs at home?", opts:["Let it sit in the sun for a minute","Boil it well before drinking","Stir it with a clean stick","Add a little mud to settle it"], a:1, why:"Boiling water kills most disease-causing germs." },
+          { q:"Which of these is a sign that water may not be safe to drink?", opts:["It is clear and cold","It has a bad smell or odd colour","It came from a covered container","It was boiled and cooled"], a:1, why:"Bad smell or odd colour can be a sign of contamination." },
+          { q:"Why should drinking water be stored in a covered container?", opts:["To keep out dust and insects","To make it taste sweeter","To make it boil faster next time","It has no real purpose"], a:0, why:"Covering water protects it from dust, insects, and contamination." }
+        ]},
+        { title: "Food & Nutrition", questions: [
+          { q:"Which food group helps build strong muscles?", opts:["Sugary snacks","Protein-rich foods like lentils, eggs, milk","Oily fried food","Soft drinks"], a:1, why:"Protein-rich foods help build and repair muscles." },
+          { q:"Why is it good to eat a variety of vegetables?", opts:["They all taste the same","Each vegetable gives different vitamins and minerals","Vegetables have no nutrition","To avoid eating grains"], a:1, why:"Different vegetables provide different vitamins and minerals the body needs." },
+          { q:"What is a simple sign of good nutrition in a young child?", opts:["Frequent illness","Steady growth and energy","Always feeling tired","Pale skin"], a:1, why:"Steady growth and energy are signs a child is well nourished." }
+        ]},
+        { title: "Staying Well", questions: [
+          { q:"When is the best time to wash your hands with soap?", opts:["Only after using the toilet","Before eating and after using the toilet","Once a day is enough","Only when hands look dirty"], a:1, why:"Handwashing before eating and after the toilet prevents the spread of germs." },
+          { q:"What should you do if you notice symptoms of illness that don't improve in a few days?", opts:["Wait without treatment","Visit a health worker or clinic","Ignore it completely","Only rely on home remedies"], a:1, why:"Persistent symptoms should be checked by a health worker or clinic." },
+          { q:"Why are vaccines important for children?", opts:["They protect against serious diseases","They are only a tradition","They have no health benefit","They are required only for travel"], a:0, why:"Vaccines protect children from serious, preventable diseases." }
+        ]}
+      ]
+    },
+    digital: {
+      label: "📱 Digital Skills",
+      levels: [
+        { title: "Using a Mobile Phone", questions: [
+          { q:"What should you do before sharing your phone's PIN or password with someone?", opts:["Share it freely with anyone who asks","Never share it — keep it private","Write it on the phone case","Tell it to strangers for help"], a:1, why:"PINs and passwords should always be kept private and not shared." },
+          { q:"What is the purpose of a phone's 'contacts' list?", opts:["To store photos","To save phone numbers and names for easy calling","To browse the internet","To charge the battery faster"], a:1, why:"Contacts store names and numbers so you can call or message people easily." },
+          { q:"If your phone battery is low, what is the safest charging practice?", opts:["Use any charger you find on the road","Use the charger made for your phone model","Charge it in water for cooling","Never charge it at all"], a:1, why:"Using the correct charger for your phone model is the safest option." }
+        ]},
+        { title: "Mobile Money & Payments", questions: [
+          { q:"What is mobile money used for?", opts:["Only for taking photos","Sending, receiving, and saving money using a phone","Watching movies only","Making phone calls only"], a:1, why:"Mobile money lets people send, receive, and save money via their phone." },
+          { q:"Before confirming a mobile payment, what should you always check?", opts:["The phone's wallpaper","The recipient's number and the amount are correct","The time of day","Nothing, just confirm quickly"], a:1, why:"Always double-check the recipient and amount before confirming a payment." },
+          { q:"What should you do if you get a message asking for your mobile money PIN to 'win a prize'?", opts:["Share the PIN immediately","Ignore it — this is likely a scam","Call the number back right away","Forward it to friends"], a:1, why:"Requests for your PIN through unexpected messages are a common scam — never share it." }
+        ]},
+        { title: "Staying Safe Online", questions: [
+          { q:"What is a good habit when you receive a message from an unknown number with a link?", opts:["Click the link right away","Avoid clicking and verify the sender first","Share it with everyone","Reply with personal details"], a:1, why:"Unknown links can be unsafe — it's best to avoid clicking and verify the source." },
+          { q:"Why should you log out of shared or public devices after use?", opts:["It is not necessary","To protect your personal information from others", "To make the device charge faster","To save internet data"], a:1, why:"Logging out protects your accounts and information on shared devices." },
+          { q:"What should you do before believing and sharing a surprising message or rumour online?", opts:["Share it immediately to warn others","Check if it is true from a reliable source first","Assume it's always true","Ignore checking entirely"], a:1, why:"Verifying information before sharing it helps prevent the spread of misinformation." }
+        ]}
+      ]
+    }
+  }
+};
+
+const BADGES = [
+  { id:"first", icon:"🌱", label:"First Steps", desc:"Finish your first lesson" },
+  { id:"streak", icon:"🔥", label:"Sharp Mind", desc:"Get 3 in a row correct" },
+  { id:"master", icon:"🏆", label:"Subject Master", desc:"Finish all lessons in a subject" },
+  { id:"builder", icon:"🏘️", label:"Village Builder", desc:"Reach 100 points" }
+];
+
+const VILLAGE_ITEMS = ["v-well","v-tree1","v-hut1","v-school","v-tree2","v-hut2"]; // reveal order
+
+/* ---------------- STATE (in-memory only) ---------------- */
+let state = {
+  audience: "kids",
+  subject: "math",
+  points: 0,
+  streak: 0,
+  bestStreak: 0,
+  completed: {
+    kids:   { math:[], science:[], language:[] },
+    adults: { money:[], health:[], digital:[] }
+  },
+  badges: new Set(),
+  villageRevealed: 0
+};
+
+let activeLevel = null; // {audience, subjectKey, levelIndex}
+let qIndex = 0;
+let levelStreak = 0;
+let levelCorrectCount = 0;
+
+/* ---------------- RENDER ---------------- */
+function renderAudienceToggle(){
+  const btns = document.querySelectorAll(".audience-btn");
+  btns.forEach(b=>{
+    b.classList.toggle("active", b.dataset.aud === state.audience);
+    b.onclick = ()=>{
+      if(state.audience !== b.dataset.aud){
+        state.audience = b.dataset.aud;
+        state.subject = Object.keys(SUBJECT_GROUPS[state.audience])[0];
+        render();
+      }
+    };
+  });
+}
+
+function renderTabs(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  const group = SUBJECT_GROUPS[state.audience];
+  Object.keys(group).forEach(key=>{
+    const btn = document.createElement("button");
+    btn.className = "tab" + (key===state.subject ? " active" : "");
+    btn.textContent = group[key].label;
+    btn.onclick = ()=>{ state.subject = key; render(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function renderRoad(){
+  const group = SUBJECT_GROUPS[state.audience];
+  const subj = group[state.subject];
+  document.getElementById("pathTitle").textContent = subj.label + " path";
+  document.getElementById("pathSub").textContent = state.audience === "kids"
+    ? "Tap a stop on the road to start that lesson."
+    : "Practical lessons for everyday life — tap a stop to begin.";
+  const completedHere = state.completed[state.audience][state.subject];
+  const road = document.getElementById("road");
+  road.innerHTML = "";
+  subj.levels.forEach((lvl, i)=>{
+    const done = completedHere.includes(i);
+    const unlocked = i === 0 || completedHere.includes(i-1);
+    const isCurrent = unlocked && !done;
+    const div = document.createElement("div");
+    div.className = "node" + (done?" done":"") + (isCurrent?" current":"") + (!unlocked?" locked":"");
+    div.innerHTML = `
+      <div class="badge-circle">${done ? "✓" : (i+1)}</div>
+      <div class="node-info">
+        <b>${lvl.title}</b>
+        <small>${lvl.questions.length} questions ${done ? "· completed" : (unlocked ? "· ready" : "· locked")}</small>
+      </div>`;
+    if(unlocked){
+      div.onclick = ()=> openLevel(state.audience, state.subject, i);
+    }
+    road.appendChild(div);
+  });
+}
+
+function renderStats(){
+  document.getElementById("statPoints").textContent = state.points;
+  document.getElementById("statStreak").textContent = state.bestStreak;
+  document.getElementById("statBadges").textContent = state.badges.size;
+}
+
+function renderBadges(){
+  const list = document.getElementById("badgesList");
+  list.innerHTML = "";
+  BADGES.forEach(b=>{
+    const earned = state.badges.has(b.id);
+    const chip = document.createElement("div");
+    chip.className = "badge-chip" + (earned ? " earned" : "");
+    chip.title = b.desc;
+    chip.innerHTML = `<span>${b.icon}</span><span>${b.label}</span>`;
+    list.appendChild(chip);
+  });
+}
+
+function renderVillage(){
+  VILLAGE_ITEMS.forEach((id, i)=>{
+    const el = document.getElementById(id);
+    if(i < state.villageRevealed) el.classList.add("show");
+    else el.classList.remove("show");
+  });
+}
+
+function render(){
+  renderAudienceToggle();
+  renderTabs();
+  renderRoad();
+  renderStats();
+  renderBadges();
+  renderVillage();
+}
+
+/* ---------------- TOAST ---------------- */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=> t.classList.remove("show"), 2200);
+}
+
+/* ---------------- QUIZ MODAL ---------------- */
+const overlay = document.getElementById("overlay");
+const modalLevelTitle = document.getElementById("modalLevelTitle");
+const modalQCount = document.getElementById("modalQCount");
+const modalQuestion = document.getElementById("modalQuestion");
+const modalOptions = document.getElementById("modalOptions");
+const modalFeedback = document.getElementById("modalFeedback");
+const btnNext = document.getElementById("btnNext");
+const btnClose = document.getElementById("btnClose");
+
+function openLevel(audience, subjectKey, levelIndex){
+  activeLevel = { audience, subjectKey, levelIndex };
+  qIndex = 0;
+  levelStreak = 0;
+  levelCorrectCount = 0;
+  overlay.classList.add("open");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const lvl = SUBJECT_GROUPS[activeLevel.audience][activeLevel.subjectKey].levels[activeLevel.levelIndex];
+  const q = lvl.questions[qIndex];
+  modalLevelTitle.textContent = lvl.title;
+  modalQCount.textContent = `Question ${qIndex+1} of ${lvl.questions.length}`;
+  modalQuestion.textContent = q.q;
+  modalFeedback.textContent = "";
+  modalFeedback.className = "feedback";
+  btnNext.disabled = true;
+  btnNext.textContent = (qIndex === lvl.questions.length - 1) ? "Finish lesson" : "Next question";
+
+  modalOptions.innerHTML = "";
+  q.opts.forEach((opt, idx)=>{
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.textContent = opt;
+    b.onclick = ()=> answer(idx, q, b);
+    modalOptions.appendChild(b);
+  });
+}
+
+function answer(idx, q, btnEl){
+  const allOpts = modalOptions.querySelectorAll(".opt");
+  allOpts.forEach(o=> o.onclick = null);
+
+  if(idx === q.a){
+    btnEl.classList.add("correct");
+    modalFeedback.textContent = "Correct! " + q.why;
+    modalFeedback.classList.add("ok");
+    state.points += 10;
+    levelStreak += 1;
+    levelCorrectCount += 1;
+    state.streak += 1;
+    if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+    if(levelStreak >= 3) state.badges.add("streak");
+  } else {
+    btnEl.classList.add("wrong");
+    allOpts[q.a].classList.add("correct");
+    modalFeedback.textContent = "Not quite. " + q.why;
+    modalFeedback.classList.add("bad");
+    levelStreak = 0;
+    state.streak = 0;
+  }
+  renderStats();
+  btnNext.disabled = false;
+}
+
+btnNext.onclick = ()=>{
+  const lvl = SUBJECT_GROUPS[activeLevel.audience][activeLevel.subjectKey].levels[activeLevel.levelIndex];
+  if(qIndex < lvl.questions.length - 1){
+    qIndex += 1;
+    renderQuestion();
+  } else {
+    finishLevel();
+  }
+};
+
+btnClose.onclick = ()=>{
+  overlay.classList.remove("open");
+  render();
+};
+
+function finishLevel(){
+  const { audience, subjectKey, levelIndex } = activeLevel;
+  const completedList = state.completed[audience][subjectKey];
+  const firstTimeOverall = Object.values(state.completed.kids).every(arr=>arr.length===0)
+    && Object.values(state.completed.adults).every(arr=>arr.length===0);
+
+  if(!completedList.includes(levelIndex)){
+    completedList.push(levelIndex);
+    state.villageRevealed = Math.min(VILLAGE_ITEMS.length, state.villageRevealed + 1);
+  }
+  if(firstTimeOverall) state.badges.add("first");
+  if(completedList.length === SUBJECT_GROUPS[audience][subjectKey].levels.length) state.badges.add("master");
+  if(state.points >= 100) state.badges.add("builder");
+
+  overlay.classList.remove("open");
+  render();
+  toast(`Lesson complete — ${levelCorrectCount}/${SUBJECT_GROUPS[audience][subjectKey].levels[levelIndex].questions.length} correct, +${levelCorrectCount*10} points`);
+}
+
+/* ---------------- INIT ---------------- */
+render();
+</script>
+</body>
+</html>
